@@ -4,6 +4,8 @@ SleepSchedule lets you plan a non-24h [monophasic sleep cycle](https://en.wikipe
 
 Some people have circadian rythms that don't match up with the 24 hour cycle. Others might want to experiment with shorter or longer days.
 
+This project is definitely a quick-and-dirty hack. There's very little error handling, the user experience could be better, and there's a bunch of questionable solutions in there. This was the first time I used Vuetify, moment.js and LZCompress, and I needed to get it done quickly for a friend.
+
 ## Usage
 Set the day you want to begin your cycle experiment, then simply drag the sliders around to set your day length, sleep length, and start time on day 1.
 
@@ -12,6 +14,10 @@ If you have unmovable events, or recurring events, you can add them with the Add
 Event recursion is pretty basic: Either daily (Every X days), or monthly (Every month on the same day). 
 
 If you want to put in workdays, simply add the appropriate number of events set to recur every 7 days (so one for Mondays, one for Tuesdays...).
+
+Click an event to delete it. You can't delete the Sleep events.
+
+Events (both sleep events, and recurring events) are planned up to a year from the start date.
 
 ## Saving / loading your schedule
 The settings and contents of your schedule are compressed and stored in the Save/load string at the top right of the page.
@@ -28,4 +34,4 @@ No data you enter is ever transmitted over the internet, unless you do so yourse
 Note that the save string is compressed, not encrypted. It can be decrompressed by anyone that has it.
 
 ## Contact
-If you find this tool useful, let me know by submitting an issue!
+If you find this tool useful, have any questions, or suggestions for new features, let me know by submitting an issue!
