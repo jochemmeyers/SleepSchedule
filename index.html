@@ -60,10 +60,10 @@
                             <v-menu v-model="todaydatepicker" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y
                                 min-width="290px">
                                 <template v-slot:activator="{ on }">
-                                    <v-text-field v-model="today" label="Start date" readonly v-on="on">
+                                    <v-text-field v-model="start" label="Start date" readonly v-on="on">
                                     </v-text-field>
                                 </template>
-                                <v-date-picker v-model="today" @input="menu2 = false"></v-date-picker>
+                                <v-date-picker v-model="start" @input="menu2 = false"></v-date-picker>
                             </v-menu>
                         </v-row>
                         <v-row><v-slider min="4" max="12" tick-size="6" v-model="sleeptime" thumb-label="always" label="Number of hours of sleep"></v-row>
@@ -160,12 +160,7 @@
         }),
         data: {
             version: 1.0,
-            baseevents: [ {
-                start: '2020-03-02 9:00',
-                duration: 1,
-                name: 'test',
-            }
-            ],
+            baseevents: [],
             baseeventsdaily: [],
             baseeventsmonthly: [],
             dialog: null,
@@ -178,8 +173,8 @@
                 recursion: 'none',
                 days: 1,
             },
-            start: '2020-03-01',
-            today: '2020-03-01',
+            start: moment().startOf('week').format('YYYY-MM-DD'),
+            today: moment().format('YYYY-MM-DD'),
             todaydatepicker:null,
             startdatepicker:null,
             starttimepicker:null,
@@ -197,7 +192,7 @@
         computed: {
             events () {
                 var events = [];
-                var basetime = moment.utc(this.today).add(this.starttime, 'h');
+                var basetime = moment.utc(this.start).add(this.starttime, 'h');
                 var time = basetime;
                 var dst_added = false;
                 var numberofdays = Math.round((365 * 24) / this.daylength);
