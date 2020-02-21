@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta charset="UTF-8">
+    <title>Schedule</title>
+    <script src="https://unpkg.com/moment@2.24.0/moment.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <v-app id="inspire">
+        <v-app-bar app clipped-left>
+            <v-toolbar-title>Schedule</v-toolbar-title>
+            <span style="position: absolute; right: 10px">Save/load string: <input style="border: 1px solid white;" type="text" v-model="savestring" @focus="$event.target.select()"></span>
+        </v-app-bar>
+    
+        <v-content>
+            <v-container class="fill-height" fluid>
+                <v-row justify="center">
+                    <v-col class="text-center">
+                        <v-row>
+                            <v-btn fab small absolute left color="primary" @click="$refs.calendar.prev()">
+                                <v-icon dark>mdi-chevron-left</v-icon>
+                            </v-btn>
+                            <v-btn fab small absolute right color="primary" @click="$refs.calendar.next()">
+                                <v-icon dark>mdi-chevron-right</v-icon>
+                            </v-btn>
+                        </v-row>
+                        <v-sheet height="480">
+                            <v-calendar 
+                                ref="calendar" 
+                                :event-color="getEventColor" 
+                                v-model="start" 
+                                :now="today" 
+                                :value="today" 
+                                :events="events" 
+                                @click:event="clickEvent"
+                                :day-format="dayFormat"
+                                color="primary" 
+                                type="week"
+                                interval-height="16" 
+                                :show-month-on-first="true"
+                                :interval-format="intervalFormat">
+                                <template v-slot:event="{ event }">
+                                    {{ event.name }}<br>
+                                    {{ event.start | formatStart }} - {{ event.end | formatEnd }}
+                                </template>
+                            </v-calendar>
+                        </v-sheet>
+                        <v-row style="padding-top: 50px;">
+                            <v-menu v-model="todaydatepicker" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y
+                                min-width="290px">
+                                <template v-slot:activator="{ on }">
+                                    <v-text-field v-model="today" label="Start date" readonly v-on="on">
+                                    </v-text-field>
+                                </template>
+                                <v-date-picker v-model="today" @input="menu2 = false"></v-date-picker>
+                            </v-menu>
+                        </v-row>
+                        <v-row><v-slider min="4" max="12" tick-size="6" v-model="sleeptime" thumb-label="always" label="Number of hours of sleep"></v-row>
+                        <v-row><v-slider min="18" max="32" tick-size="6" v-model="daylength" thumb-label="always" label="Total length of day"></v-row>
+                        <v-row><v-slider min="0" max="24" tick-size="6" v-model="starttime" thumb-label="always" label="Time to start on day 1"></v-row>
+                        <v-row justify="center">
+                            <v-dialog v-model="dialog" persistent max-width="600px">
+                                <template v-slot:activator="{ on }">
+                                    <v-btn color="primary" dark v-on="on">Add event</v-btn>
+                                </template>
+                                <v-card>
+                                    <v-card-title>
+                                        <span class="headline">Add event</span>
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-container>
+                                            <v-row>
+                                                <v-col cols="12">
+                                                    <v-text-field label="Event description" v-model="newevent.name"></v-text-field>
+                                                </v-col>
+                                                <v-col class="" cols="12">
+                                                    <v-menu ref="startdatepicker" v-model="startdatepicker" :close-on-content-click="false" :return-value.sync="newevent.startdate"
+                                                        transition="scale-transition" offset-y min-width="290px">
+                                                        <template v-slot:activator="{ on }">
+                                                            <v-text-field v-model="newevent.startdate" label="Date" readonly v-on="on"></v-text-field>
+                                                        </template>
+                                                        <v-date-picker v-model="newevent.startdate" @input="$refs.startdatepicker.save(newevent.startdate)"></v-date-picker>
+                                                    </v-menu>
+                                                </v-col>
+                                                <v-col cols="12">
+                                                    <v-menu ref="starttimepicker" v-model="starttimepicker" :close-on-content-click="false" :nudge-right="40" :return-value.sync="newevent.starttime"
+                                                        transition="scale-transition" offset-y max-width="290px" min-width="290px">
+                                                        <template v-slot:activator="{ on }">
+                                                            <v-text-field v-model="newevent.starttime" label="Time" readonly v-on="on">
+                                                            </v-text-field>
+                                                        </template>
+                                                        <v-time-picker v-if="starttimepicker" :format="'24hr'" v-model="newevent.starttime" full-width @click:minute="$refs.starttimepicker.save(newevent.starttime)"></v-time-picker>
+                                                    </v-menu>
+                                                </v-col>
+                                                <v-col cols="12">
+                                                    <v-text-field label="Duration" v-model="newevent.duration" suffix="hours"></v-text-field>
+                                                </v-col>
+                                                <v-col cols="12">
+                                                    <p>Recurring</p>
+                                                    <v-radio-group v-model="newevent.recursion">
+                                                        <v-radio label="None" value="none"></v-radio>
+                                                        <v-radio label="Every X days" value="days"></v-radio>
+                                                        <v-radio label="Every Month" value="month"></v-radio>
+                                                    </v-radio-group>
+                                                </v-col>
+                                                <v-col cols="12" v-show="newevent.recursion == 'days'">
+                                                    <v-text-field label="Recurs every X days" v-model="newevent.days"></v-text-field>
+                                                </v-col>
+                                            </v-row>
+                                        </v-container>
+                                    </v-card-text>
+                                    <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="blue darken-1" text @click="dialog = false">Close</v-btn>
+                                        <v-btn color="blue darken-1" text @click="addEvent">Save</v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-dialog>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-content>
+    </v-app>
+</div>
+<script>
+    const monthNames = ['',
+        'januari',
+        'februari',
+        'maart',
+        'april',
+        'mei',
+        'juni',
+        'juli',
+        'augustus',
+        'september',
+        'oktober',
+        'november',
+        'december',
+    ];
+    // var moment = require('moment');
+    moment.defaultFormat = 'YYYY-MM-DD HH:mm';
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify({
+            icons: {
+                iconfont: 'mdi', // default - only for display purposes
+            },
+        }),
+        data: {
+            version: 1.0,
+            baseevents: [ {
+                start: '2020-03-02 9:00',
+                duration: 1,
+                name: 'test',
+            }
+            ],
+            baseeventsdaily: [],
+            baseeventsmonthly: [],
+            dialog: null,
+            newevent: {
+                name: '',
+                start: '',
+                startdate:'',
+                starttime:'',
+                duration: 1,
+                recursion: 'none',
+                days: 1,
+            },
+            start: '2020-03-01',
+            today: '2020-03-01',
+            todaydatepicker:null,
+            startdatepicker:null,
+            starttimepicker:null,
+            date:'',
+            sleeptime: 8,
+            daylength: 24,
+            starttime: 22,
+            translate:[],
+        },
+        mounted() {
+        },
+        created() {
+            this.$vuetify.theme.dark = true
+        },
+        computed: {
+            events () {
+                var events = [];
+                var basetime = moment.utc(this.today).add(this.starttime, 'h');
+                var time = basetime;
+                var dst_added = false;
+                var numberofdays = Math.round((365 * 24) / this.daylength);
+                for (var i = 0; i < numberofdays; i++) {
+                    events.push({
+                        name: 'Sleep', 
+                        start: time.format('YYYY-MM-DD HH:mm'), 
+                        end: time.add(this.sleeptime, 'h').subtract(1, 'm').format('YYYY-MM-DD HH:mm'), 
+                        color: '#440044',
+                    });
+                    time.add(this.daylength - this.sleeptime, 'h').add(1,'m');
+                }
+
+                for (var i = 0; i < 52; i++) {
+                    for (var j in this.baseeventsdaily) {
+                        time = moment(this.baseeventsdaily[j].start).add(this.baseeventsdaily[j].interval*i,'days');
+                        events.push({ 
+                            name: this.baseeventsdaily[j].name, 
+                            start: time.format(), 
+                            id: 'd' + j,
+                            end: time.add(this.baseeventsdaily[j].duration,'h').subtract(1, 'm').format(),
+                            color: this.baseeventsdaily[j].color || '#660000',
+                            });
+                    }
+                }
+                for (var i = 0; i < 12; i++) {
+                    for (var j in this.baseeventsmonthly) {
+                        time = moment(this.baseeventsmonthly[j].start).add(1*i,'months');
+                        events.push({ 
+                            name: this.baseeventsmonthly[j].name, 
+                            start: time.format(), 
+                            id: 'm' + j,
+                            end: time.add(this.baseeventsmonthly[j].duration,'hours').subtract(1, 'm').format(),
+                            color: this.baseeventsmonthly[j].color || '#006600',
+                            });
+                    }
+                }
+                for (var i in this.baseevents) {
+                    events.push({
+                        name: this.baseevents[i].name,
+                        start: moment(this.baseevents[i].start).format(),
+                        id: 'e' + i,
+                        end: moment(this.baseevents[i].start).add(this.baseevents[i].duration, 'h').subtract(1, 'm').format(),
+                        color: this.baseevents[i].color || '#000066',
+                    });
+                }
+                return events;
+            },
+            savestring: {
+                get() {
+                    var enc=[];
+                    var j = 0;
+                    for (var i in this._data) {
+                        if (i == 'translate') continue;
+                        enc[j] = this._data[i];
+                        this.translate[j] = i;
+                        j++;
+                    }
+                    return LZString.compressToBase64(JSON.stringify(enc));
+                },
+                set(value) {
+                    var newData = JSON.parse(LZString.decompressFromBase64(value));
+                    if (this.version != newData[this.translate.indexOf('version')]) {
+                        alert("This savestring was created with an older version of this tool, it might not work correctly!");
+                    }
+                    for(var i in newData) {
+                        if (this.translate[i]=='version') continue;
+                        Vue.set(this, this.translate[i], newData[i]);
+                    }
+                },
+            }
+        },
+        methods: {
+            intervalFormat (interval) {
+                return interval.time
+            },
+            getEventColor(event) {
+                return event.color
+            },
+            dayFormat(date, short) {
+                return (date.weekday==0 || date.day==1)?date.day + ' ' + monthNames[date.month]:date.day;
+            },
+            addEvent() {
+                if (this.newevent.name == '') {
+                    alert('Please fill in a name for the event');
+                    return;
+                }
+                if (this.newevent.startdate == '') {
+                    alert('Please enter a date for the event');
+                    return;
+                }
+                if (this.newevent.starttime == '') {
+                    alert('Please enter a valid starttime');
+                    return;
+                }
+                if (parseInt(this.newevent.duration) == 0 || parseInt(this.newevent.duration) == NaN) {
+                    alert('Please enter a valid duration for the event');
+                    return;
+                }
+                if (this.newevent.recursion == 'days' && parseInt(this.newevent.days) == 0 || parseInt(this.newevent.duration) == NaN) {
+                    alert('Please enter a value for the number of days between events');
+                    return;
+                }
+
+                var event = {
+                    start: this.newevent.startdate + ' ' + this.newevent.starttime,
+                    name: this.newevent.name,
+                    duration: this.newevent.duration,
+                };
+
+                if (this.newevent.recursion == 'days') {
+                    event.interval = this.newevent.days;
+                    this.baseeventsdaily.push(event);
+                } else if (this.newevent.recursion == 'month') {
+                    this.baseeventsmonthly.push(event);
+                } else {
+                    this.baseevents.push(event);
+                }
+                this.dialog = false;
+            },
+            clickEvent(event) {
+                if (event.event.id == undefined) return;
+                for (var i in this.baseevents) {
+                    if (event.event.id == 'e'+i) {
+                        if (confirm("Are you sure you want to delete '" + event.event.name + "'?")) {
+                            this.baseevents.splice(i, 1);
+                        }
+                        return;
+                    }
+                }
+                for (var i in this.baseeventsdaily) {
+                    if (event.event.id == 'd'+i) {
+                        if (confirm("Are you sure you want to delete '" + event.event.name + "'?")) { 
+                           this.baseeventsdaily.splice(i, 1);
+                        }
+                        return;
+                    }
+                }
+                for (var i in this.baseeventsmonthly) {
+                    if (event.event.id == 'm'+i) {
+                        if (confirm("Are you sure you want to delete '" + event.event.name + "'?")) {
+                            this.baseeventsmonthly.splice(i, 1);
+                        }
+                        return;
+                    }
+                }
+            }
+        },
+        filters: {
+            formatStart(time) {
+                return moment(time).format('HH:mm');
+            },
+            formatEnd(time) {
+                var tmp = moment(time);
+                if (tmp.format('mm') == '59'){
+                    tmp.add(1,'m');
+                }
+                return tmp.format('HH:mm');
+            }
+        }
+    });
+</script>
+</body>
+</html>
