@@ -1,6 +1,6 @@
 # SleepSchedule
 ## About
-SleepSchedule lets you plan a non-24h [monophasic sleep cycle](https://en.wikipedia.org/wiki/Biphasic_and_polyphasic_sleep), without having to figure out manually when you'll be awake and asleep. This tool is partially inspired by the XKCD comic [28-hour day](https://xkcd.com/320/).
+SleepSchedule lets you plan a non-24h [monophasic sleep cycle](https://en.wikipedia.org/wiki/Biphasic_and_polyphasic_sleep), without having to figure out manually when you'll be awake and asleep. This tool is partially inspired by the XKCD comic [28-hour day](https://xkcd.com/320/) (NSFW language).
 
 Some people have circadian rythms that don't match up with the 24 hour cycle. Others might want to experiment with shorter or longer days.
 
