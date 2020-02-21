@@ -60,10 +60,10 @@
                             <v-menu v-model="todaydatepicker" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y
                                 min-width="290px">
                                 <template v-slot:activator="{ on }">
-                                    <v-text-field v-model="start" label="Start date" readonly v-on="on">
+                                    <v-text-field v-model="eventsStart" label="Start date" readonly v-on="on">
                                     </v-text-field>
                                 </template>
-                                <v-date-picker v-model="start" @input="menu2 = false"></v-date-picker>
+                                <v-date-picker v-model="eventsStart" @input="todaydatepicker = false"></v-date-picker>
                             </v-menu>
                         </v-row>
                         <v-row><v-slider min="4" max="12" tick-size="6" v-model="sleeptime" thumb-label="always" label="Number of hours of sleep"></v-row>
@@ -173,6 +173,7 @@
                 recursion: 'none',
                 days: 1,
             },
+            eventsStart: moment().startOf('week').format('YYYY-MM-DD'),
             start: moment().startOf('week').format('YYYY-MM-DD'),
             today: moment().format('YYYY-MM-DD'),
             todaydatepicker:null,
@@ -192,7 +193,7 @@
         computed: {
             events () {
                 var events = [];
-                var basetime = moment.utc(this.start).add(this.starttime, 'h');
+                var basetime = moment.utc(this.eventsStart).add(this.starttime, 'h');
                 var time = basetime;
                 var dst_added = false;
                 var numberofdays = Math.round((365 * 24) / this.daylength);
