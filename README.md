@@ -26,3 +26,6 @@ You can also share the Save/load string with others if you want.
 No data you enter is ever transmitted over the internet, unless you do so yourself. It isn't even stored in your browser past closing or refreshing the page.
 
 Note that the save string is compressed, not encrypted. It can be decrompressed by anyone that has it.
+
+## Contact
+If you find this tool useful, let me know by submitting an issue!
