@@ -7,6 +7,8 @@ Some people have circadian rythms that don't match up with the 24 hour cycle. Ot
 This project is definitely a quick-and-dirty hack. There's very little error handling, the user experience could be better, and there's a bunch of questionable solutions in there. This was the first time I used Vuetify, moment.js and LZCompress, and I needed to get it done quickly for a friend.
 
 ## Usage
+Clone or download the repository and just open the HTML file in your browser. Alternatively, it's available on https://jochemmeyers.github.io/SleepSchedule/
+
 Set the day you want to begin your cycle experiment, then simply drag the sliders around to set your day length, sleep length, and start time on day 1.
 
 If you have unmovable events, or recurring events, you can add them with the Add Event button at the bottom.
